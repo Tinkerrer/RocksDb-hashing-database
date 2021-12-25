@@ -54,7 +54,4 @@ int main(int argc, char* argv[]) {
   RockDatabase db2("vm[\"output\"].as<std::string>()");
 
   db1.copy_hashed(db2);
-  db2.close();
-  db2.open("../test2.db");
-  db2.print();
 }
