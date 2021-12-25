@@ -29,17 +29,17 @@ string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
 # new versions of cmake contain gtest search files
 # commented out to increase the build speed.
 # hunter_add_package(GTest)
-find_package(GTest CONFIG REQUIRED)
+find_package(GTest REQUIRED)
 
 hunter_add_package(rocksdb)
 find_package(RocksDB CONFIG REQUIRED)
 
-hunter_add_package(Boost COMPONENTS program_options)
-find_package(Boost CONFIG REQUIRED program_options)
+hunter_add_package(Boost COMPONENTS program_options log thread)
+find_package(Boost CONFIG REQUIRED program_options log thread)
 
 add_library(${PROJECT_NAME} STATIC
   # enum your files and delete this comment
-  ${CMAKE_CURRENT_SOURCE_DIR}/sources/example.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/sources/RockDatabase.cpp
 )
 
 add_executable(demo
@@ -51,7 +51,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   "$<INSTALL_INTERFACE:include>"
 )
 
-target_link_libraries(demo ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} RocksDB::rocksdb)
+target_link_libraries(demo ${PROJECT_NAME} RocksDB::rocksdb Boost::program_options Boost::log Boost::thread)
 
 if(BUILD_TESTS)
   add_executable(tests
