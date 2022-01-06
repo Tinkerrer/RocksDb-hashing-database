@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
   desc.add_options()("help", "produce help message")(
       "log_level", value<std::string>()->default_value("error"),
       "\"error\" | \"info\"")("output",
-                              value<std::string>()->default_value("dbcs"),
+                              value<std::string>()->default_value("../dbcs.db"),
                               "name of output DB");
 
   variables_map vm;
@@ -51,7 +51,8 @@ int main(int argc, char* argv[]) {
   // vm["output"].as<std::string>() - имя файла для записи хэшей
   // argv[1] - имя файла из которого берутся данные для хэшей
   RockDatabase db1(argv[1]);
-  RockDatabase db2("vm[\"output\"].as<std::string>()");
+  RockDatabase db2(vm["output"].as<std::string>());
 
   db1.copy_hashed(db2);
+  db2.print();
 }

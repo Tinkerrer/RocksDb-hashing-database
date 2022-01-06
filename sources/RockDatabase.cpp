@@ -16,7 +16,7 @@ void RockDatabase::open(const std::string& database) {
 
   // Создаем вектор параметров открытия каждой Column Families
   std::vector<ColumnFamilyDescriptor> column_families;
-  for (const auto& col_name : column_families_names) {
+  for (auto& col_name : column_families_names) {
     column_families.push_back(
         ColumnFamilyDescriptor(col_name, ColumnFamilyOptions()));
   }
@@ -34,41 +34,50 @@ void RockDatabase::open(const std::string& database) {
 void RockDatabase::print() {
   for (const auto& handle : handles) {
     Iterator* iterator = db->NewIterator(ReadOptions(), handle);
+    std::cout << handle->GetName() << std::endl;
     for (iterator->SeekToFirst(); iterator->Valid(); iterator->Next()) {
       std::cout << iterator->key().ToString() << ": "
                 << iterator->value().ToString() << std::endl;
     }
     delete iterator;
+    std::cout << "=============================\n";
   }
 }
 
 void RockDatabase::close() {
   Status s;
-  for (auto handle : handles) {
-    delete handle;
+  for (auto& handle : handles) {
+    s = db->DestroyColumnFamilyHandle(handle);
+    printLog(s, "destroying handle");
   }
   s = db->Close();
-  delete db;
   printLog(s, "database closing status");
+  delete db;
 }
 
 void RockDatabase::copy_hashed(RockDatabase& db_to_paste) {
   Status s;
 
-  for (auto handle : db_to_paste.handles) {
+  for (auto& handle : db_to_paste.handles) {
+    // Система не позволяет сделать drop для default column, поэтому приходится
+    // обходить этот запрет
+    if (handle->GetName() == "default") {
+      continue;
+    }
     s = db_to_paste.db->DropColumnFamily(handle);
     printLog(s, "dropping column family \"" + handle->GetName() + "\" status");
   }
 
-  //Тут проблема с создание новых указателей handles
-  // Убрать из коммита логи
   db_to_paste.handles.resize(handles.size());
 
   for (size_t i = 0; i < handles.size(); ++i) {
+    if (db_to_paste.handles[i]) {
+      continue;
+    }
     ColumnFamilyDescriptor desc;
     handles[i]->GetDescriptor(&desc);
-    s = db_to_paste.db->DB::CreateColumnFamily(desc.options, desc.name,
-                                               &db_to_paste.handles[i]);
+    s = db_to_paste.db->CreateColumnFamily(desc.options, desc.name,
+                                           &db_to_paste.handles[i]);
     printLog(s, "creating column family \"" + desc.name + "\" status");
   }
 

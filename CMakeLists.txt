@@ -29,7 +29,7 @@ string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
 # new versions of cmake contain gtest search files
 # commented out to increase the build speed.
 # hunter_add_package(GTest)
-find_package(GTest REQUIRED)
+#find_package(GTest REQUIRED)
 
 hunter_add_package(rocksdb)
 find_package(RocksDB CONFIG REQUIRED)
@@ -54,7 +54,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} RocksDB::rocksdb)
 target_link_libraries(demo ${PROJECT_NAME} RocksDB::rocksdb Boost::program_options Boost::log Boost::thread)
 
-if(BUILD_TESTS)
+#[[if(BUILD_TESTS)
   add_executable(tests
     # TODO: enum your files and delete this comment
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/example.cpp
@@ -62,7 +62,7 @@ if(BUILD_TESTS)
   target_link_libraries(tests ${PROJECT_NAME} GTest::gtest_main)
   enable_testing()
   add_test(NAME unit_tests COMMAND tests)
-endif()
+endif()]]
 
 if(BUILD_COVERAGE)
   set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
