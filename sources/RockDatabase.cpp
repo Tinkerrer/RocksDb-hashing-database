@@ -24,6 +24,7 @@ void RockDatabase::open(const std::string& database) {
   // Открываем текущие DB
   Options options;
   options.create_if_missing = true;
+
   Status s = DB::Open(options, database, column_families, &handles, &db);
 
   // Выводим лог об ошибке
@@ -74,11 +75,10 @@ void RockDatabase::copy_hashed(RockDatabase& db_to_paste) {
     if (db_to_paste.handles[i]) {
       continue;
     }
-    ColumnFamilyDescriptor desc;
-    handles[i]->GetDescriptor(&desc);
-    s = db_to_paste.db->CreateColumnFamily(desc.options, desc.name,
-                                           &db_to_paste.handles[i]);
-    printLog(s, "creating column family \"" + desc.name + "\" status");
+    s = db_to_paste.db->CreateColumnFamily(
+        ColumnFamilyOptions(), handles[i]->GetName(), &db_to_paste.handles[i]);
+    printLog(s,
+             "creating column family \"" + handles[i]->GetName() + "\" status");
   }
 
   for (size_t i = 0; i < handles.size(); ++i) {
